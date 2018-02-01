@@ -1,8 +1,15 @@
 #ifndef BUILTIN_H
 #define BUILTIN_H
+#include <stdbool.h>
 
-/// Return value of a builtin command handler. Must be freed
-typedef const char* builtin_val;
+/// Return value of a builtin command handler. Must be freed if error is false
+typedef struct {
+  /// The result of the builtin command
+  const char* value;
+
+  /// True if the result is an error
+  bool error;
+} builtin_val;
 
 /**
  * Returns the process id of the shell

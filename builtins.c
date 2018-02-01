@@ -1,9 +1,10 @@
 #include "builtins.h"
-#include <sys/types.h>
+#include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 static int num_digits(int num) {
@@ -18,8 +19,9 @@ static int num_digits(int num) {
 
 static builtin_val get_process_id(pid_t process_id) {
   size_t res_size = num_digits(process_id) + 1;
-  char* res = (char*)malloc(res_size * sizeof(char));
-  snprintf(res, res_size, "%d", process_id);
+  char* out = (char*)malloc(res_size * sizeof(char));
+  snprintf(out, res_size, "%d", process_id);
+  builtin_val res = {out, false};
   return res;
 }
 
@@ -28,33 +30,53 @@ builtin_val pid() { return get_process_id(getpid()); }
 builtin_val ppid() { return get_process_id(getppid()); }
 
 builtin_val cd(const char* path) {
-  //   puts(path);
+  bool is_error = false;
+  const char* out = 0;
   if (!path) path = getenv("HOME");
-  chdir(path);
-  return 0;
+  if (chdir(path)) {
+    out = strerror(errno);
+    is_error = true;
+  }
+
+  builtin_val res = {out, is_error};
+  return res;
 }
 
 builtin_val pwd() {
   size_t res_size = 1024;
-  char* res = (char*)malloc(res_size * sizeof(char));
-  // TODO: handle error
-  return getcwd(res, res_size);
+  const char* out = 0;
+  bool is_error = false;
+  if (!(out = getcwd(0, res_size))) {
+    const char* err = strerror(errno);
+    out = err;
+    is_error = true;
+  }
+
+  builtin_val res = {out, is_error};
+  return res;
 }
 
 builtin_val set(const char* var, const char* value) {
-  if (value)
-    setenv(var, value, true);
-  else
-    unsetenv(var);
-  return 0;
+  bool is_error = false;
+  const char* err = 0;
+  if ((value && setenv(var, value, true)) || (!value && unsetenv(var))) {
+    err = strerror(errno);
+    is_error = true;
+  }
+
+  builtin_val res = {err, is_error};
+  return res;
 }
 
 builtin_val get(const char* var) {
   const char* env = getenv(var);
-  if (!env) env = " ";
+  char* out = 0;
+  if (env) {
+    size_t res_size = strlen(env) + 1;
+    out = (char*)malloc(res_size * sizeof(char));
+    strncpy(out, env, res_size);
+  }
 
-  size_t res_size = strlen(env) + 1;
-  char* res = (char*)malloc(res_size * sizeof(char));
-  strncpy(res, env, res_size);
+  builtin_val res = {out, false};
   return res;
 }
