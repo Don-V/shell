@@ -1,4 +1,4 @@
-CC = gcc
+CC = g++
 DEBUG = -ggdb
 LFLAGS = -Wall -Werror
 CFLAGS = $(LFLAGS) $(DEBUG) -std=c99
