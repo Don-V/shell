@@ -84,4 +84,11 @@ void write_to_out(FILE* dest, const char* out);
  */
 bool process_builtin_out(DEST dest, builtin_val res);
 
+/**
+ * Runs a process
+ * \param dest the destination of the output of the process
+ * \param cmd the command string of the process to be run
+ */
+void handle_process(DEST dest, const char* const cmd[]);
+
 #endif

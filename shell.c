@@ -1,8 +1,10 @@
 #include "shell.h"
+#include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "builtins.h"
 #include "utils.h"
 
@@ -20,7 +22,9 @@ int main(int argc, char** argv) {
 
     // process input
     if (handle_builtin(dest, cmd)) continue;
+    const char** input_args = split(cmd, ' ');
 
+    handle_process(dest, input_args);
     // test - to be removes
     // print_prompt(args.prompt);
     char temp[100];
@@ -115,6 +119,35 @@ bool handle_builtin(DEST dest, const char* cmd) {
   }
 
   return false;
+}
+
+void handle_process(DEST dest, const char* const cmd[]) {
+  pid_t ch_pid = fork();
+
+  // child act
+  if (!ch_pid) {
+    if (execvp(cmd[0], (char* const*)cmd)) {
+      write_to_out(dest.err, strerror(errno));
+      return;
+    }
+  }
+
+  // check for error here
+  if (ch_pid == -1) {
+    write_to_out(dest.err, strerror(errno));
+    free((void*)cmd);
+    return;
+  }
+
+  // parent act
+  // 4 for square brackets, space and null terminator
+  int status_len = num_digits(ch_pid) + 4;
+  char child_status[status_len];
+  child_status[status_len - 1] = 0;
+  snprintf(child_status, status_len, "[%d] %s", ch_pid, cmd[0]);
+  free((void*)cmd);
+  write_to_out(dest.out, child_status);
+  wait(0);
 }
 
 bool process_builtin_out(DEST dest, builtin_val res) {
