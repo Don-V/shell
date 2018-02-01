@@ -5,10 +5,10 @@ CFLAGS = $(LFLAGS) $(DEBUG) -std=gnu99
 
 default: all
 
-shell.o: shell.h shell.c builtins.h
+shell.o: shell.h shell.c builtins.h utils.h
 	$(CC) $(CFLAGS) -c shell.c
 
-builtins.o: builtins.h builtins.c
+builtins.o: builtins.h builtins.c utils.h
 	$(CC) $(CFLAGS) -c builtins.c
 
 utils.o: utils.h utils.c
