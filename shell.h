@@ -78,13 +78,6 @@ bool handle_builtin(DEST dest, const char* cmd);
 void write_to_out(FILE* dest, const char* out);
 
 /**
- * Writes to the current error destination
- * \param dest destination of error
- * \param out string to be written to error destination
- */
-void write_to_err(FILE* dest, const char* out);
-
-/**
  * Processes builtin output and prints it
  * \param dest destination of output
  * \param res string to be written to output

@@ -119,7 +119,7 @@ bool handle_builtin(DEST dest, const char* cmd) {
 
 bool process_builtin_out(DEST dest, builtin_val res) {
   if (res.error) {
-    write_to_err(dest.err, res.value);
+    write_to_out(dest.err, res.value);
     return true;
   }
   write_to_out(dest.out, res.value);
@@ -127,6 +127,6 @@ bool process_builtin_out(DEST dest, builtin_val res) {
   return true;
 }
 
-void write_to_out(FILE* dest, const char* out) { fprintf(dest, "%s\n", out); }
-
-void write_to_err(FILE* dest, const char* out) { fprintf(dest, "%s\n", out); }
+void write_to_out(FILE* dest, const char* out) {
+  if (out) fprintf(dest, "%s\n", out);
+}
