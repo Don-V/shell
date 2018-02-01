@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include "builtins.h"
 
 int main(int argc, char** argv) {
   static char cmd[CMD_LEN];
