@@ -11,8 +11,11 @@ shell.o: shell.h shell.c builtins.h
 builtins.o: builtins.h builtins.c
 	$(CC) $(CFLAGS) -c builtins.c
 
-all: shell.o builtins.o
-	$(CC) $(CFLAGS) builtins.o shell.o -o shell
+utils.o: utils.h utils.c
+	$(CC) $(CFLAGS) -c utils.c
+
+all: shell.o builtins.o utils.o
+	$(CC) $(CFLAGS) builtins.o shell.o utils.o -o shell
 
 clean:
 	rm -rf *.o shell

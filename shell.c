@@ -4,10 +4,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include "builtins.h"
+#include "utils.h"
 
 int main(int argc, char** argv) {
   static char cmd[CMD_LEN];
-  FILE* out = stdout;
+  DEST dest = {stdout, stderr};
   // parse command line arguments
   cmd_args args = parse_args(argc, argv);
 
@@ -18,13 +19,13 @@ int main(int argc, char** argv) {
     get_input(cmd);
 
     // process input
-    if (handle_builtin(out, cmd)) continue;
+    if (handle_builtin(dest, cmd)) continue;
 
     // test - to be removes
     // print_prompt(args.prompt);
     char temp[100];
     snprintf(temp, 100, "You typed '%s'", cmd);
-    write_to_out(out, temp);
+    write_to_out(dest.out, temp);
   }
 
   return 0;
@@ -60,9 +61,10 @@ void get_input(char* cmd) {
   fgets(cmd, CMD_LEN - 1, stdin);
   int len = strlen(cmd);
   if (len > 0) cmd[len - 1] = 0;
+  trim(cmd);
 }
 
-bool handle_builtin(FILE* dest, const char* cmd) {
+bool handle_builtin(DEST dest, const char* cmd) {
   if (strncmp("pid", cmd, 4) == 0) {
     builtin_val out_str = pid();
     return process_builtin_out(dest, out_str);
@@ -87,10 +89,14 @@ bool handle_builtin(FILE* dest, const char* cmd) {
     return process_builtin_out(dest, out_str);
   }
 
-  if (strncmp("cd ", cmd, 3) == 0) {  // TODO
+  if (strncmp("cd", cmd, 3) == 0) {
+    builtin_val out_str = cd(0);
+    return process_builtin_out(dest, out_str);
+  }
+
+  if (strncmp("cd ", cmd, 3) == 0) {
     size_t var_length = strlen(cmd) - 2;
     char path[var_length];
-    // if (path)
     strncpy(path, cmd + 3, var_length);
 
     builtin_val out_str = cd(path);
@@ -111,10 +117,16 @@ bool handle_builtin(FILE* dest, const char* cmd) {
   return false;
 }
 
-bool process_builtin_out(FILE* dest, builtin_val res) {
-  write_to_out(dest, res);
-  free((void*)res);
+bool process_builtin_out(DEST dest, builtin_val res) {
+  if (res.error) {
+    write_to_err(dest.err, res.value);
+    return true;
+  }
+  write_to_out(dest.out, res.value);
+  free((void*)res.value);
   return true;
 }
 
 void write_to_out(FILE* dest, const char* out) { fprintf(dest, "%s\n", out); }
+
+void write_to_err(FILE* dest, const char* out) { fprintf(dest, "%s\n", out); }

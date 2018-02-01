@@ -13,9 +13,27 @@
 
 #define RESET "\x1B[0m"
 
+/**
+ * Structure for command line arguments
+ */
 typedef struct command_line_arguments {
   const char* prompt;
 } cmd_args;
+
+/**
+ * Destination file of output
+ */
+typedef struct {
+  /**
+   * Destination of standard out
+   */
+  FILE* out;
+
+  /**
+   * Destination of stderr
+   */
+  FILE* err;
+} DEST;
 
 /**
  * Prints the prompt formatted like a shell prompt
@@ -50,7 +68,7 @@ bool should_be_open(const char* cmd);
  * \param cmd input command
  * \return true if command was handled
  */
-bool handle_builtin(FILE* dest, const char* cmd);
+bool handle_builtin(DEST dest, const char* cmd);
 
 /**
  * Writes to the current output destination
@@ -60,10 +78,17 @@ bool handle_builtin(FILE* dest, const char* cmd);
 void write_to_out(FILE* dest, const char* out);
 
 /**
+ * Writes to the current error destination
+ * \param dest destination of error
+ * \param out string to be written to error destination
+ */
+void write_to_err(FILE* dest, const char* out);
+
+/**
  * Processes builtin output and prints it
  * \param dest destination of output
  * \param res string to be written to output
  */
-bool process_builtin_out(FILE* dest, builtin_val res);
+bool process_builtin_out(DEST dest, builtin_val res);
 
 #endif
