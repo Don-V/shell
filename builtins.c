@@ -6,16 +6,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
-
-static int num_digits(int num) {
-  int res = 0;
-  while (num) {
-    num /= 10;
-    res++;
-  }
-
-  return res;
-}
+#include "utils.h"
 
 static builtin_val get_process_id(pid_t process_id) {
   size_t res_size = num_digits(process_id) + 1;

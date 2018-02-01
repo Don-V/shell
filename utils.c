@@ -1,6 +1,17 @@
 #include "utils.h"
 #include <ctype.h>
+#include <stdlib.h>
 #include <string.h>
+
+int num_digits(int num) {
+  int res = 0;
+  while (num) {
+    num /= 10;
+    res++;
+  }
+
+  return res;
+}
 
 char *trim(char *str) {
   size_t len = 0;
@@ -46,4 +57,24 @@ char *trim(char *str) {
   }
 
   return str;
+}
+
+int count(const char *str, char sub) {
+  int len = 0;
+  while (*str) {
+    if (*(str++) == sub) len++;
+  }
+  return len;
+}
+
+const char **split(char *str, char delim) {
+  int len = count(str, delim);
+  if (!len) return 0;
+  const char **res = (const char **)malloc(sizeof(char *) * (len + 1));
+  res[0] = strtok(str, &delim);
+  int i = 1;
+  while ((res[i++] = strtok(0, &delim)))
+    ;
+
+  return res;
 }
