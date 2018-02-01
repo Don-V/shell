@@ -1,6 +1,8 @@
 #ifndef SHELL_H
 #define SHELL_H
 #include <stdbool.h>
+#include <stdio.h>
+#include "builtins.h"
 
 // Red color constant
 #ifndef KRED
@@ -41,5 +43,27 @@ cmd_args parse_args(int argc, char** argv);
  * \return true if the prompt should be open else false
  */
 bool should_be_open(const char* cmd);
+
+/**
+ * Handles builtin commands and returns true if command was builtin
+ * \param dest destination of output of builtin handler
+ * \param cmd input command
+ * \return true if command was handled
+ */
+bool handle_builtin(FILE* dest, const char* cmd);
+
+/**
+ * Writes to the current output destination
+ * \param dest destination of output
+ * \param out string to be written to output
+ */
+void write_to_out(FILE* dest, const char* out);
+
+/**
+ * Processes builtin output and prints it
+ * \param dest destination of output
+ * \param res string to be written to output
+ */
+bool process_builtin_out(FILE* dest, builtin_val res);
 
 #endif
