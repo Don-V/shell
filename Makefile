@@ -1,7 +1,7 @@
 CC = gcc
 DEBUG = -ggdb
 LFLAGS = -Wall -Werror
-CFLAGS = $(LFLAGS) $(DEBUG) -std=c99
+CFLAGS = $(LFLAGS) $(DEBUG) -std=gnu99
 
 default: all
 
