@@ -1,5 +1,6 @@
 #ifndef UTILS_H
 #define UTILS_H
+#include <stdbool.h>
 
 /**
  * Returns the number of digits in a number
@@ -30,5 +31,12 @@ int count(const char *str, char sub);
  * \return a pointer to the list.
  */
 const char **split(char *str, char delim);
+
+/**
+ * Checks for a trailing ampersand, and removes it
+ * \param cmd the string buffer being check
+ * \return true if trailing ampersand was found and removed
+ */
+bool remove_ampersand(const char *cmd[]);
 
 #endif

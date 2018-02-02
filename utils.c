@@ -1,5 +1,6 @@
 #include "utils.h"
 #include <ctype.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -77,4 +78,19 @@ const char **split(char *str, char delim) {
     ;
 
   return res;
+}
+
+bool remove_ampersand(const char *cmd[]) {
+  const char **c = cmd;
+
+  while (*c) {
+    cmd = c++;
+  }
+
+  if (*cmd && strncmp("&", *cmd, 2) == 0) {
+    *cmd = 0;
+    return true;
+  }
+
+  return false;
 }

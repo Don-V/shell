@@ -11,7 +11,7 @@
 #include "utils.h"
 
 int main(int argc, char** argv) {
-  static char cmd[CMD_LEN];
+  static char cmd[CMD_LEN] = {0};
   DEST dest = {stdout, stderr};
   // parse command line arguments
   cmd_args args = parse_args(argc, argv);
@@ -120,12 +120,17 @@ bool handle_builtin(DEST dest, const char* cmd) {
   return false;
 }
 
-void handle_process(DEST dest, const char* const cmd[]) {
+void handle_process(DEST dest, const char* cmd[]) {
   if (!cmd || !*cmd) return;
+
+  //   bool bg_process = remove_ampersand(cmd);
+
   pid_t ch_pid = fork();
 
   // child act
   if (!ch_pid) {
+    // remove ampersand if background process
+    // remove_ampersand(cmd);
     if (execvp(cmd[0], (char* const*)cmd)) {
       const char* err = strerror(errno);
       const char* prefix = "Cannot exec";
@@ -154,6 +159,10 @@ void handle_process(DEST dest, const char* const cmd[]) {
   child_status[status_len - 1] = 0;
   snprintf(child_status, status_len, "[%d] %s", ch_pid, cmd[0]);
   write_to_out(dest.out, child_status);
+
+  // check for background process
+  //   if (bg_process) {
+  //     }
 
   // get child status
   int status;
