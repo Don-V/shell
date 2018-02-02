@@ -27,11 +27,6 @@ int main(int argc, char** argv) {
     const char** input_args = split(cmd, ' ');
 
     handle_process(dest, input_args);
-    // test - to be removes
-    // print_prompt(args.prompt);
-    char temp[100];
-    snprintf(temp, 100, "You typed '%s'", cmd);
-    write_to_out(dest.out, temp);
   }
 
   return 0;
@@ -120,21 +115,32 @@ bool handle_builtin(DEST dest, const char* cmd) {
     return process_builtin_out(dest, out_str);
   }
 
+  if (strncmp("exit", cmd, 5) == 0) return true;
+
   return false;
 }
 
 void handle_process(DEST dest, const char* const cmd[]) {
+  if (!cmd || !*cmd) return;
   pid_t ch_pid = fork();
 
   // child act
   if (!ch_pid) {
     if (execvp(cmd[0], (char* const*)cmd)) {
-      write_to_out(dest.err, strerror(errno));
-      return;
+      const char* err = strerror(errno);
+      const char* prefix = "Cannot exec";
+
+      // 4 for 3 spaces and null terminator;
+      int len = strlen(err) + strlen(cmd[0]) + strlen(prefix) + 4;
+      char msg[len];
+      snprintf(msg, len, "%s %s: %s", prefix, cmd[0], err);
+      free((void*)cmd);
+      write_to_out(dest.err, msg);
+      exit(-1);
     }
   }
 
-  // check for error here
+  // check for failed creation of child
   if (ch_pid == -1) {
     write_to_out(dest.err, strerror(errno));
     free((void*)cmd);
@@ -149,14 +155,15 @@ void handle_process(DEST dest, const char* const cmd[]) {
   snprintf(child_status, status_len, "[%d] %s", ch_pid, cmd[0]);
   write_to_out(dest.out, child_status);
 
+  // get child status
   int status;
   wait(&status);
   if (WIFEXITED(status)) {
     // TODO: out
-    printf("%s Exit %d\n", cmd[0], WEXITSTATUS(status));
+    printf("[%d] %s Exit %d\n", ch_pid, cmd[0], WEXITSTATUS(status));
   } else if (WIFSIGNALED(status)) {  // or just else
                                      // TODO: out
-    printf("%s Killed (%d)\n", cmd[0], WTERMSIG(status));
+    printf("[%d] %s Killed (%d)\n", ch_pid, cmd[0], WTERMSIG(status));
   }
   free((void*)cmd);
 }
