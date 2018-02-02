@@ -27,6 +27,7 @@ int main(int argc, char** argv) {
     const char** input_args = split(cmd, ' ');
 
     handle_process(dest, input_args);
+    check_for_dead_processes(dest);
   }
 
   return 0;
@@ -123,14 +124,12 @@ bool handle_builtin(DEST dest, const char* cmd) {
 void handle_process(DEST dest, const char* cmd[]) {
   if (!cmd || !*cmd) return;
 
-  //   bool bg_process = remove_ampersand(cmd);
+  bool bg_process = remove_ampersand(cmd);
 
   pid_t ch_pid = fork();
 
   // child act
   if (!ch_pid) {
-    // remove ampersand if background process
-    // remove_ampersand(cmd);
     if (execvp(cmd[0], (char* const*)cmd)) {
       const char* err = strerror(errno);
       const char* prefix = "Cannot exec";
@@ -161,19 +160,19 @@ void handle_process(DEST dest, const char* cmd[]) {
   write_to_out(dest.out, child_status);
 
   // check for background process
-  //   if (bg_process) {
-  //     }
-
-  // get child status
-  int status;
-  wait(&status);
-  if (WIFEXITED(status)) {
-    // TODO: out
-    printf("[%d] %s Exit %d\n", ch_pid, cmd[0], WEXITSTATUS(status));
-  } else if (WIFSIGNALED(status)) {  // or just else
-                                     // TODO: out
-    printf("[%d] %s Killed (%d)\n", ch_pid, cmd[0], WTERMSIG(status));
+  if (!bg_process) {
+    // get child status
+    int status;
+    wait(&status);
+    if (WIFEXITED(status)) {
+      // TODO: out
+      printf("[%d] %s Exit %d\n", ch_pid, cmd[0], WEXITSTATUS(status));
+    } else if (WIFSIGNALED(status)) {  // or just else
+                                       // TODO: out
+      printf("[%d] %s Killed (%d)\n", ch_pid, cmd[0], WTERMSIG(status));
+    }
   }
+
   free((void*)cmd);
 }
 
@@ -189,4 +188,12 @@ bool process_builtin_out(DEST dest, builtin_val res) {
 
 void write_to_out(FILE* dest, const char* out) {
   if (out) fprintf(dest, "%s\n", out);
+}
+
+void check_for_dead_processes(DEST dest) {
+  int status;
+  pid_t pid;
+  if ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
+    printf("Background process %d\n", pid);
+  }
 }

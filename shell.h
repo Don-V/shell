@@ -91,4 +91,10 @@ bool process_builtin_out(DEST dest, builtin_val res);
  */
 void handle_process(DEST dest, const char* cmd[]);
 
+/**
+ * Checks for background processes and
+ * outputs their exit status if any exists
+ * \param dest the destination of the output
+ */
+void check_for_dead_processes(DEST dest);
 #endif
