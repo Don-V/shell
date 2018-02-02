@@ -143,7 +143,7 @@ void handle_process(DEST dest, const char* const cmd[]) {
 
   // parent act
   // 4 for square brackets, space and null terminator
-  int status_len = num_digits(ch_pid) + 4;
+  int status_len = num_digits(ch_pid) + 4 + strlen(cmd[0]);
   char child_status[status_len];
   child_status[status_len - 1] = 0;
   snprintf(child_status, status_len, "[%d] %s", ch_pid, cmd[0]);
@@ -153,10 +153,10 @@ void handle_process(DEST dest, const char* const cmd[]) {
   wait(&status);
   if (WIFEXITED(status)) {
     // TODO: out
-    printf("%s Exit %d", cmd[0], WEXITSTATUS(status));
+    printf("%s Exit %d\n", cmd[0], WEXITSTATUS(status));
   } else if (WIFSIGNALED(status)) {  // or just else
                                      // TODO: out
-    printf("%s Killed (%d)", cmd[0], WTERMSIG(status));
+    printf("%s Killed (%d)\n", cmd[0], WTERMSIG(status));
   }
   free((void*)cmd);
 }

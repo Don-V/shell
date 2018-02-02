@@ -68,8 +68,8 @@ int count(const char *str, char sub) {
 }
 
 const char **split(char *str, char delim) {
-  int len = count(str, delim);
-  if (!len) return 0;
+  if (!str) return 0;
+  int len = count(str, delim) + 1;
   const char **res = (const char **)malloc(sizeof(char *) * (len + 1));
   res[0] = strtok(str, &delim);
   int i = 1;
