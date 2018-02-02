@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include "builtins.h"
 #include "utils.h"
@@ -145,9 +147,18 @@ void handle_process(DEST dest, const char* const cmd[]) {
   char child_status[status_len];
   child_status[status_len - 1] = 0;
   snprintf(child_status, status_len, "[%d] %s", ch_pid, cmd[0]);
-  free((void*)cmd);
   write_to_out(dest.out, child_status);
-  wait(0);
+
+  int status;
+  wait(&status);
+  if (WIFEXITED(status)) {
+    // TODO: out
+    printf("%s Exit %d", cmd[0], WEXITSTATUS(status));
+  } else if (WIFSIGNALED(status)) {  // or just else
+                                     // TODO: out
+    printf("%s Killed (%d)", cmd[0], WTERMSIG(status));
+  }
+  free((void*)cmd);
 }
 
 bool process_builtin_out(DEST dest, builtin_val res) {
