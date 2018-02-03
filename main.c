@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
     const char** input_args = split(cmd, ' ');
 
     handle_process(&shell, input_args);
-    check_for_dead_processes(shell.dest);
+    check_for_dead_processes(&shell);
   }
 
   return 0;

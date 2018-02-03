@@ -64,7 +64,7 @@ void empty_queue(List* l) {
  * \param l list
  * \param data being searched
  */
-void* search(List* l, void* data) {
+void* list_search(List* l, void* data) {
   struct Node* current = l->front;
   while (current) {
     void* curr_data = current->data;

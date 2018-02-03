@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include "builtins.h"
+#include "linked_list/list.h"
 
 // Red color constant
 #ifndef KRED
@@ -43,7 +44,7 @@ typedef struct process {
   /**
    * Name of the process
    */
-  const char* name;
+  char* name;
 
   /**
    * Process ID of the process
@@ -60,7 +61,7 @@ typedef struct shell {
   /**
    * Background processes currently active
    */
-  process_t jobs[];
+  List jobs;
 } shell_t;
 
 /**
@@ -131,13 +132,23 @@ void handle_process(const shell_t* shell, const char* cmd[]);
  * \param dest the destination of the output
  * \param pid the process id of the process
  * \param cmd_path the name of the process
+ * \param status status of dead process
  */
-void print_status(DEST dest, pid_t pid, const char* const cmd_path);
+void print_status(DEST dest, pid_t pid, const char* const cmd_path, int status);
 
 /**
  * Checks for background processes and
  * outputs their exit status if any exists
- * \param dest the destination of the output
+ * \param shell the shell
  */
-void check_for_dead_processes(DEST dest);
+void check_for_dead_processes(shell_t* shell);
+
+/**
+ * Searches for a background process with the process of of pid
+ * \param shell the shell being searched
+ * \param pid the process id of the process
+ * \return the name of the process if found else 0
+ */
+const char* find_process(shell_t* shell, pid_t pid);
+
 #endif

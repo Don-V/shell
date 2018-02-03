@@ -10,9 +10,16 @@
 #include "builtins.h"
 #include "utils.h"
 
+static bool process_equals(const void* data1, const void* data2) {
+  const process_t* process = (const process_t*)data1;
+  const pid_t* pid = (const pid_t*)data2;
+  return process->pid == *pid;
+}
+
 void init_shell(shell_t* shell) {
   DEST dest = {stdout, stderr};
   shell->dest = dest;
+  list_init(&(shell->jobs), process_equals);
 }
 
 void print_prompt(const char* prompt) { printf("%s> ", prompt); }
@@ -105,9 +112,7 @@ bool handle_builtin(DEST dest, const char* cmd) {
 
 void handle_process(const shell_t* shell, const char* cmd[]) {
   if (!cmd || !*cmd) return;
-
   bool bg_process = remove_ampersand(cmd);
-
   pid_t ch_pid = fork();
 
   // child act
@@ -144,15 +149,23 @@ void handle_process(const shell_t* shell, const char* cmd[]) {
   // check for background process
   if (!bg_process) {
     // output child status
-    print_status(shell->dest, ch_pid, cmd[0]);
+    int status;
+    wait(&status);
+    print_status(shell->dest, ch_pid, cmd[0], status);
+  } else {
+    process_t* process = (process_t*)malloc(sizeof(process_t));
+    size_t name_len = strlen(cmd[0]) + 1;
+    process->name = (char*)malloc(name_len);
+    strncpy(process->name, cmd[0], name_len - 1);
+    process->pid = ch_pid;
+    enqueue((List*)&(shell->jobs), process);
   }
 
   free((void*)cmd);
 }
 
-void print_status(DEST dest, pid_t pid, const char* const cmd_path) {
-  int status;
-  wait(&status);
+void print_status(DEST dest, pid_t pid, const char* const cmd_path,
+                  int status) {
   if (WIFEXITED(status)) {
     // TODO: out
     printf("[%d] %s Exit %d\n", pid, cmd_path, WEXITSTATUS(status));
@@ -176,10 +189,22 @@ void write_to_out(FILE* dest, const char* out) {
   if (out) fprintf(dest, "%s\n", out);
 }
 
-void check_for_dead_processes(DEST dest) {
+void check_for_dead_processes(shell_t* shell) {
   int status;
   pid_t pid = waitpid(-1, &status, WNOHANG);
   if (pid > 0) {
-    printf("Background process %d\n", pid);
+    const char* name = find_process(shell, pid);
+    print_status(shell->dest, pid, name, status);
+    free((void*)name);
   }
+}
+
+const char* find_process(shell_t* shell, pid_t pid) {
+  process_t* found = list_search(&(shell->jobs), &pid);
+  if (found) {
+    const char* name = found->name;
+    free(found);
+    return name;
+  }
+  return 0;
 }
