@@ -2,6 +2,7 @@
 #define SHELL_H
 #include <stdbool.h>
 #include <stdio.h>
+#include <sys/types.h>
 #include "builtins.h"
 
 // Red color constant
@@ -23,7 +24,7 @@ typedef struct command_line_arguments {
 /**
  * Destination file of output
  */
-typedef struct {
+typedef struct output_dest {
   /**
    * Destination of standard out
    */
@@ -34,6 +35,33 @@ typedef struct {
    */
   FILE* err;
 } DEST;
+
+/**
+ * Details of a background process ran by the shell
+ */
+typedef struct process {
+  /**
+   * Name of the process
+   */
+  const char* name;
+
+  /**
+   * Process ID of the process
+   */
+  pid_t pid;
+} process;
+
+typedef struct shell {
+  /**
+   * Output destination of the shell
+   */
+  DEST dest;
+
+  /**
+   * Background processes currently active
+   */
+  process jobs[];
+} shell;
 
 /**
  * Prints the prompt formatted like a shell prompt
