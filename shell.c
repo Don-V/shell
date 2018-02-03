@@ -145,19 +145,19 @@ void handle_process(const shell_t* shell, const char* cmd[]) {
   snprintf(child_status, status_len, "[%d] %s", ch_pid, cmd[0]);
   write_to_out(shell->dest.out, child_status);
 
-  // check for background process
-  if (!bg_process) {
-    // output child status
-    int status;
-    waitpid(ch_pid, &status, 0);
-    print_status(shell->dest, ch_pid, cmd[0], status);
-  } else {
+  if (bg_process) {
+    // add background process to list of background processes
     process_t* process = (process_t*)malloc(sizeof(process_t));
     size_t name_len = strlen(cmd[0]) + 1;
     process->name = (char*)malloc(name_len);
     strncpy(process->name, cmd[0], name_len);
     process->pid = ch_pid;
     enqueue((List*)&(shell->jobs), process);
+  } else {
+    // output child status
+    int status;
+    waitpid(ch_pid, &status, 0);
+    print_status(shell->dest, ch_pid, cmd[0], status);
   }
 
   free((void*)cmd);
