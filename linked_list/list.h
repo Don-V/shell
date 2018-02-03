@@ -1,23 +1,24 @@
-#ifndef QUEUE_H
-#define QUEUE_H
+#ifndef LIST_H
+#define LIST_H
 
 typedef struct Node {
   void* data;
   struct Node* next;
-  int priority;
 
 } Node;
 
-typedef struct Queue {
+typedef struct List {
   struct Node* front;
   struct Node* rear;
+  bool (*equals)(const void* data1, const void* data2);
   int size;
-} Queue;
+} List;
 
-void queue_init(Queue* q);  // TODO const
-void* peek(Queue* q, void* data);
-void dequeue(Queue* q);
-void enqueue(Queue* q, void* data);
-void empty_queue(Queue* q);
+void list_init(List* l, bool (*equals)(const void* data1, const void* data2));
+void* peek(List* l, void* data);
+void dequeue(List* l);
+void enqueue(List* l, void* data);
+void* search(List* l, void* data);
+void empty_queue(List* l);
 
 #endif

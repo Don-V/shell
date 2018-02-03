@@ -1,58 +1,76 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "list.h"
 
-/*Initializes queue with function pointers, and other front and rear pointers*/
-void queue_init(Queue* q) {
-  q->front = NULL;
-  q->rear = NULL;
-  q->size = 0;
+/*Initializes list with function pointers, and other front and rear pointers*/
+void list_init(List* l, bool (*equals)(const void* data1, const void* data2)) {
+  l->front = 0;
+  l->rear = 0;
+  l->size = 0;
+  l->equals = equals;
 }
 
 /* Add to queue without priority (linear queue)*/
-void enqueue(Queue* q, void* data) {
+void enqueue(List* l, void* data) {
   struct Node* temp = (struct Node*)malloc(sizeof(struct Node));
   temp->data = data;
   temp->next = NULL;
-  temp->priority = 0;
-  q->size++;
-  if (q->front == NULL && q->rear == NULL) {
-    q->front = q->rear = temp;
+  l->size++;
+  if (l->front == NULL && l->rear == NULL) {
+    l->front = l->rear = temp;
     return;
   }
-  q->rear->next = temp;
-  q->rear = temp;
+  l->rear->next = temp;
+  l->rear = temp;
 }
 
 /* Removes node with highest priority*/
-void dequeue(Queue* q) {
-  struct Node* temp = q->front;
-  if (q->front == NULL) return;
-  if (q->front == q->rear) {
-    q->front = q->rear = NULL;
+void dequeue(List* l) {
+  struct Node* temp = l->front;
+  if (l->front == NULL) return;
+  if (l->front == l->rear) {
+    l->front = l->rear = NULL;
   } else {
-    q->front = q->front->next;
+    l->front = l->front->next;
   }
   free(temp);
-  q->size--;
+  l->size--;
 }
 
 /* Modifies Node data pointer to data of the node with the highest priority*/
-void* peek(Queue* q, void* data) {
-  if (q->front == NULL) return NULL;
-  data = q->front->data;
+void* peek(List* l, void* data) {
+  if (l->front == NULL) return NULL;
+  data = l->front->data;
   return data;
 }
 
 /*Removes all elements from the queue*/
-void empty_queue(Queue* q) {
-  struct Node* temp = q->front;
+void empty_queue(List* l) {
+  struct Node* temp = l->front;
   while (temp) {
-    q->front = q->front->next;
+    l->front = l->front->next;
     free(temp);
-    temp = q->front;
+    temp = l->front;
   }
-  q->front = q->rear = NULL;
-  q->size = 0;
+  l->front = l->rear = NULL;
+  l->size = 0;
+}
+
+/**
+ * Search list for data
+ * Uses equals function pointer, data is passed as the second argument
+ * \param l list
+ * \param data being searched
+ */
+void* search(List* l, void* data) {
+  struct Node* current = l->front;
+  while (current) {
+    void* curr_data = current->data;
+    if (l->equals(curr_data, data)) return curr_data;
+    current = current->next;
+  }
+
+  return 0;
 }
