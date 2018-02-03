@@ -103,7 +103,7 @@ bool handle_builtin(DEST dest, const char* cmd) {
   return false;
 }
 
-void handle_process(DEST dest, const char* cmd[]) {
+void handle_process(const shell_t* shell, const char* cmd[]) {
   if (!cmd || !*cmd) return;
 
   bool bg_process = remove_ampersand(cmd);
@@ -121,14 +121,14 @@ void handle_process(DEST dest, const char* cmd[]) {
       char msg[len];
       snprintf(msg, len, "%s %s: %s", prefix, cmd[0], err);
       free((void*)cmd);
-      write_to_out(dest.err, msg);
+      write_to_out(shell->dest.err, msg);
       exit(-1);
     }
   }
 
   // check for failed creation of child
   if (ch_pid == -1) {
-    write_to_out(dest.err, strerror(errno));
+    write_to_out(shell->dest.err, strerror(errno));
     free((void*)cmd);
     return;
   }
@@ -139,23 +139,27 @@ void handle_process(DEST dest, const char* cmd[]) {
   char child_status[status_len];
   child_status[status_len - 1] = 0;
   snprintf(child_status, status_len, "[%d] %s", ch_pid, cmd[0]);
-  write_to_out(dest.out, child_status);
+  write_to_out(shell->dest.out, child_status);
 
   // check for background process
   if (!bg_process) {
-    // get child status
-    int status;
-    wait(&status);
-    if (WIFEXITED(status)) {
-      // TODO: out
-      printf("[%d] %s Exit %d\n", ch_pid, cmd[0], WEXITSTATUS(status));
-    } else if (WIFSIGNALED(status)) {  // or just else
-                                       // TODO: out
-      printf("[%d] %s Killed (%d)\n", ch_pid, cmd[0], WTERMSIG(status));
-    }
+    // output child status
+    print_status(shell->dest, ch_pid, cmd[0]);
   }
 
   free((void*)cmd);
+}
+
+void print_status(DEST dest, pid_t pid, const char* const cmd_path) {
+  int status;
+  wait(&status);
+  if (WIFEXITED(status)) {
+    // TODO: out
+    printf("[%d] %s Exit %d\n", pid, cmd_path, WEXITSTATUS(status));
+  } else if (WIFSIGNALED(status)) {  // or just else
+                                     // TODO: out
+    printf("[%d] %s Killed (%d)\n", pid, cmd_path, WTERMSIG(status));
+  }
 }
 
 bool process_builtin_out(DEST dest, builtin_val res) {
@@ -174,8 +178,8 @@ void write_to_out(FILE* dest, const char* out) {
 
 void check_for_dead_processes(DEST dest) {
   int status;
-  pid_t pid;
-  if ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
+  pid_t pid = waitpid(-1, &status, WNOHANG);
+  if (pid > 0) {
     printf("Background process %d\n", pid);
   }
 }

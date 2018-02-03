@@ -124,7 +124,15 @@ bool process_builtin_out(DEST dest, builtin_val res);
  * \param dest the destination of the output of the process
  * \param cmd the command string of the process to be run
  */
-void handle_process(DEST dest, const char* cmd[]);
+void handle_process(const shell_t* shell, const char* cmd[]);
+
+/**
+ * Prints the status of a process to a destination
+ * \param dest the destination of the output
+ * \param pid the process id of the process
+ * \param cmd_path the name of the process
+ */
+void print_status(DEST dest, pid_t pid, const char* const cmd_path);
 
 /**
  * Checks for background processes and

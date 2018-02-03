@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
     if (handle_builtin(shell.dest, cmd)) continue;
     const char** input_args = split(cmd, ' ');
 
-    handle_process(shell.dest, input_args);
+    handle_process(&shell, input_args);
     check_for_dead_processes(shell.dest);
   }
 
