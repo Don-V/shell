@@ -10,6 +10,11 @@
 #include "builtins.h"
 #include "utils.h"
 
+void init_shell(shell_t* shell) {
+  DEST dest = {stdout, stderr};
+  shell->dest = dest;
+}
+
 void print_prompt(const char* prompt) { printf("%s> ", prompt); }
 
 cmd_args parse_args(int argc, char** argv) {

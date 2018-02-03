@@ -3,7 +3,8 @@
 
 int main(int argc, char** argv) {
   static char cmd[CMD_LEN] = {0};
-  DEST dest = {stdout, stderr};
+  shell_t shell;
+  init_shell(&shell);
   // parse command line arguments
   cmd_args args = parse_args(argc, argv);
 
@@ -14,11 +15,11 @@ int main(int argc, char** argv) {
     get_input(cmd);
 
     // process input
-    if (handle_builtin(dest, cmd)) continue;
+    if (handle_builtin(shell.dest, cmd)) continue;
     const char** input_args = split(cmd, ' ');
 
-    handle_process(dest, input_args);
-    check_for_dead_processes(dest);
+    handle_process(shell.dest, input_args);
+    check_for_dead_processes(shell.dest);
   }
 
   return 0;

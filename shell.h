@@ -49,7 +49,7 @@ typedef struct process {
    * Process ID of the process
    */
   pid_t pid;
-} process;
+} process_t;
 
 typedef struct shell {
   /**
@@ -60,8 +60,15 @@ typedef struct shell {
   /**
    * Background processes currently active
    */
-  process jobs[];
-} shell;
+  process_t jobs[];
+} shell_t;
+
+/**
+ * Sets up the output and error destination of the shell to
+ * stdout and stderr respectively
+ * \param shell the shell being initialized
+ */
+void init_shell(shell_t* shell);
 
 /**
  * Prints the prompt formatted like a shell prompt
