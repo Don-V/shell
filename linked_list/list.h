@@ -10,10 +10,11 @@ typedef struct Node {
 } Node;
 
 typedef struct List {
-  struct Node* front;
-  struct Node* rear;
+  Node* front;
+  Node* rear;
   bool (*equals)(const void* data1, const void* data2);
   int size;
+  Node* _iter;
 } List;
 
 /**
@@ -42,7 +43,7 @@ void enqueue(List* l, void* data);
 void* list_search(List* l, void* query);
 
 /**
- * Remove data from list
+ * Remove data from list and reset the iterator
  * Uses equals function pointer, data is passed as the second argument
  * \param l list
  * \param data to be removed
@@ -51,5 +52,14 @@ void* list_search(List* l, void* query);
 void* list_remove(List* l, void* data);
 
 void empty_list(List* l);
+
+/**
+ * Iterates through the list and returns the next member
+ * starting from the front and ending at that tail
+ * Iterator is reset if an element is removed
+ * \param l the list being iterated
+ * \param start starts iteration from the head again
+ */
+void* iterate(List* l, bool start);
 
 #endif

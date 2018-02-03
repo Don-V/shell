@@ -12,6 +12,7 @@ typedef struct query_result {
 void list_init(List* l, bool (*equals)(const void* data1, const void* data2)) {
   l->front = 0;
   l->rear = 0;
+  l->_iter = 0;
   l->size = 0;
   l->equals = equals;
 }
@@ -82,6 +83,7 @@ void* list_remove(List* l, void* data) {
     void* res = curr->data;
     free(curr);
     l->size--;
+    l->_iter = 0;
     return res;
   }
   return 0;
@@ -90,5 +92,15 @@ void* list_remove(List* l, void* data) {
 void* list_search(List* l, void* query) {
   query_result_t found = search(l, query);
   if (found.res) return (found.res)->data;
+  return 0;
+}
+
+void* iterate(List* l, bool start) {
+  if (start) l->_iter = l->front;
+  Node* curr = l->_iter;
+  if (curr) {
+    l->_iter = curr->next;
+    return curr->data;
+  }
   return 0;
 }
