@@ -5,7 +5,7 @@ CFLAGS = $(LFLAGS) $(DEBUG) -std=gnu99
 
 default: all
 
-mian.o: shell.h
+main.o: shell.h
 	$(CC) $(CFLAGS) -c main.c
 
 shell.o: shell.h shell.c builtins.h utils.h
@@ -17,8 +17,11 @@ builtins.o: builtins.h builtins.c utils.h
 utils.o: utils.h utils.c
 	$(CC) $(CFLAGS) -c utils.c
 
-all: shell.o builtins.o utils.o main.o
-	$(CC) $(CFLAGS) builtins.o main.o shell.o utils.o -o shell
+list.o: linked_list/list.h linked_list/list.c
+	$(CC) $(CFLAGS) -c linked_list/list.c
+
+all: shell.o builtins.o utils.o main.o list.o
+	$(CC) $(CFLAGS) builtins.o main.o shell.o utils.o list.o -o shell
 
 clean:
 	rm -rf *.o shell
