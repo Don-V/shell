@@ -142,7 +142,6 @@ void handle_process(const shell_t* shell, const char* cmd[]) {
   // 4 for square brackets, space and null terminator
   int status_len = num_digits(ch_pid) + 4 + strlen(cmd[0]);
   char child_status[status_len];
-  child_status[status_len - 1] = 0;
   snprintf(child_status, status_len, "[%d] %s", ch_pid, cmd[0]);
   write_to_out(shell->dest.out, child_status);
 
@@ -150,13 +149,13 @@ void handle_process(const shell_t* shell, const char* cmd[]) {
   if (!bg_process) {
     // output child status
     int status;
-    wait(&status);
+    waitpid(ch_pid, &status, 0);
     print_status(shell->dest, ch_pid, cmd[0], status);
   } else {
     process_t* process = (process_t*)malloc(sizeof(process_t));
     size_t name_len = strlen(cmd[0]) + 1;
     process->name = (char*)malloc(name_len);
-    strncpy(process->name, cmd[0], name_len - 1);
+    strncpy(process->name, cmd[0], name_len);
     process->pid = ch_pid;
     enqueue((List*)&(shell->jobs), process);
   }
