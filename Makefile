@@ -5,7 +5,7 @@ CFLAGS = $(LFLAGS) $(DEBUG) -std=gnu99
 
 default: all
 
-main.o: shell.h
+main.o: shell.h main.c utils.h
 	$(CC) $(CFLAGS) -c main.c
 
 shell.o: shell.h shell.c builtins.h utils.h
