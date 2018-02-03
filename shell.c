@@ -199,7 +199,7 @@ void check_for_dead_processes(shell_t* shell) {
 }
 
 const char* find_process(shell_t* shell, pid_t pid) {
-  process_t* found = list_search(&(shell->jobs), &pid);
+  process_t* found = list_remove(&(shell->jobs), &pid);
   if (found) {
     const char* name = found->name;
     free(found);
