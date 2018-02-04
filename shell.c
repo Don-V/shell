@@ -122,20 +122,12 @@ void handle_process(const shell_t* shell, const char* cmd[]) {
   bool bg_process = remove_ampersand(cmd);
   pid_t ch_pid = fork();
 
-  // child act
-  if (!ch_pid) {
-    if (execvp(cmd[0], (char* const*)cmd)) {
-      const char* err = strerror(errno);
-      const char* prefix = "Cannot exec";
-
-      // 4 for 3 spaces and null terminator;
-      int len = strlen(err) + strlen(cmd[0]) + strlen(prefix) + 4;
-      char msg[len];
-      snprintf(msg, len, "%s %s: %s", prefix, cmd[0], err);
-      free((void*)cmd);
-      write_to_out(shell->dest.err, msg);
-      exit(-1);
-    }
+  // execute job in child process
+  if (!ch_pid && execvp(cmd[0], (char* const*)cmd)) {
+    const char* err = strerror(errno);
+    write_format(shell->dest.err, "Cannot exec %s: %s\n", cmd[0], err);
+    free((void*)cmd);
+    exit(-1);
   }
 
   // check for failed creation of child
@@ -145,12 +137,9 @@ void handle_process(const shell_t* shell, const char* cmd[]) {
     return;
   }
 
-  // parent act
-  // 4 for square brackets, space and null terminator
-  int status_len = num_digits(ch_pid) + 4 + strlen(cmd[0]);
-  char child_status[status_len];
-  snprintf(child_status, status_len, "[%d] %s", ch_pid, cmd[0]);
-  write_to_out(shell->dest.out, child_status);
+  // parent action
+  // write process name and pid
+  write_format(shell->dest.out, "[%d] %s\n", ch_pid, cmd[0]);
 
   if (bg_process) {
     // add background process to list of background processes
@@ -178,7 +167,7 @@ void print_status(DEST dest, pid_t pid, const char* const cmd_path,
                  WEXITSTATUS(status));
   } else if (WIFSIGNALED(status)) {  // or just else
                                      // TODO: out
-    write_format((shell->dest).out, "[%d] %s Killed (%d)\n", pid, cmd_path,
+    write_format(dest.out, "[%d] %s Killed (%d)\n", pid, cmd_path,
                  WTERMSIG(status));
   }
 }
