@@ -100,11 +100,11 @@ bool should_be_open(const char* cmd);
 
 /**
  * Handles builtin commands and returns true if command was builtin
- * \param dest destination of output of builtin handler
+ * \param shell the shell
  * \param cmd input command
  * \return true if command was handled
  */
-bool handle_builtin(DEST dest, const char* cmd);
+bool handle_builtin(const shell_t* shell, const char* cmd);
 
 /**
  * Writes to the current output destination
@@ -150,5 +150,11 @@ void check_for_dead_processes(shell_t* shell);
  * \return the name of the process if found else 0
  */
 const char* find_process(shell_t* shell, pid_t pid);
+
+/**
+ * Prints out the current background processes
+ * \shell the shell running the processes
+ */
+void list_background_processes(const shell_t* shell);
 
 #endif

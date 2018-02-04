@@ -55,7 +55,8 @@ void get_input(char* cmd) {
   trim(cmd);
 }
 
-bool handle_builtin(DEST dest, const char* cmd) {
+bool handle_builtin(const shell_t* shell, const char* cmd) {
+  DEST dest = shell->dest;
   if (strncmp("pid", cmd, 4) == 0) {
     builtin_val out_str = pid();
     return process_builtin_out(dest, out_str);
@@ -103,6 +104,11 @@ bool handle_builtin(DEST dest, const char* cmd) {
     const char* env_value = strtok(0, " ");
     builtin_val out_str = set(env_name, env_value);
     return process_builtin_out(dest, out_str);
+  }
+
+  if (strncmp("jobs", cmd, 5) == 0) {
+    list_background_processes(shell);
+    return true;  // process_builtin_out(dest, out_str);
   }
 
   if (strncmp("exit", cmd, 5) == 0) return true;
@@ -206,4 +212,17 @@ const char* find_process(shell_t* shell, pid_t pid) {
     return name;
   }
   return 0;
+}
+
+void list_background_processes(const shell_t* shell) {
+  const process_t* job = (const process_t*)iterate((List*)&(shell->jobs), true);
+  if (!job) {
+    printf("No running processes\n");
+    return;
+  }
+  printf("%40s | %10s", "process", "pid\n");
+  printf("%40s | %10d\n", job->name, job->pid);
+  while ((job = (const process_t*)iterate((List*)&(shell->jobs), false))) {
+    printf("%40s | %10d\n", job->name, job->pid);
+  }
 }
