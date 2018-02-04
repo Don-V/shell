@@ -1,5 +1,6 @@
 #include "shell.h"
 #include <errno.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -173,10 +174,12 @@ void print_status(DEST dest, pid_t pid, const char* const cmd_path,
                   int status) {
   if (WIFEXITED(status)) {
     // TODO: out
-    printf("[%d] %s Exit %d\n", pid, cmd_path, WEXITSTATUS(status));
+    write_format(dest.out, "[%d] %s Exit %d\n", pid, cmd_path,
+                 WEXITSTATUS(status));
   } else if (WIFSIGNALED(status)) {  // or just else
                                      // TODO: out
-    printf("[%d] %s Killed (%d)\n", pid, cmd_path, WTERMSIG(status));
+    write_format((shell->dest).out, "[%d] %s Killed (%d)\n", pid, cmd_path,
+                 WTERMSIG(status));
   }
 }
 
@@ -204,6 +207,13 @@ void check_for_dead_processes(shell_t* shell) {
   }
 }
 
+void write_format(FILE* dest, const char* format, ...) {
+  va_list args;
+  va_start(args, format);
+  vfprintf(dest, format, args);
+  va_end(args);
+}
+
 const char* find_process(shell_t* shell, pid_t pid) {
   process_t* found = list_remove(&(shell->jobs), &pid);
   if (found) {
@@ -217,12 +227,12 @@ const char* find_process(shell_t* shell, pid_t pid) {
 void list_background_processes(const shell_t* shell) {
   const process_t* job = (const process_t*)iterate((List*)&(shell->jobs), true);
   if (!job) {
-    printf("No running processes\n");
+    write_format((shell->dest).out, "No running processes\n");
     return;
   }
-  printf("%40s | %10s", "process", "pid\n");
-  printf("%40s | %10d\n", job->name, job->pid);
+  write_format((shell->dest).out, "%40s | %10s\n", "process", "pid");
+  write_format((shell->dest).out, "%40s | %10d\n", job->name, job->pid);
   while ((job = (const process_t*)iterate((List*)&(shell->jobs), false))) {
-    printf("%40s | %10d\n", job->name, job->pid);
+    write_format((shell->dest).out, "%40s | %10d\n", job->name, job->pid);
   }
 }

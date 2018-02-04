@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
     get_input(cmd);
 
     // process input
-    if (handle_builtin(shell.dest, cmd)) continue;
+    if (handle_builtin(&shell, cmd)) continue;
     const char** input_args = split(cmd, ' ');
 
     handle_process(&shell, input_args);

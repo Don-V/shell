@@ -157,4 +157,11 @@ const char* find_process(shell_t* shell, pid_t pid);
  */
 void list_background_processes(const shell_t* shell);
 
+/**
+ * Format output
+ * \param dest destination of output
+ * \param format string format to be written to output
+ */
+void write_format(FILE* dest, const char* format, ...);
+
 #endif
