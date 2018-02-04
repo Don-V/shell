@@ -39,4 +39,18 @@ const char **split(char *str, char delim);
  */
 bool remove_ampersand(const char *cmd[]);
 
+/**
+ * Checks if the command output should be piped
+ * Strips the command of the pipe character and pipe destination
+ * Writes the destination file name to dest param
+ * \param cmd the command being checked
+ * \param dest_loc the address of the filename buffer
+ * filename will be malloc'd(must be freed)
+ * \return the status
+ *  if *dest_loc is 0 and return is 0,there is no pipe,
+ *  if *dest_loc is 0 and return is -1, there is an error
+ *  if *dest_loc is not 0, return is 1, strip was successful
+ */
+int pipe_destination(char cmd[], char **dest);
+
 #endif

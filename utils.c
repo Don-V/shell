@@ -94,3 +94,54 @@ bool remove_ampersand(const char *cmd[]) {
 
   return false;
 }
+
+int pipe_destination(char cmd[], char **dest_loc) {
+  char *curr = cmd;
+  // search for file pipe character
+  while (*curr) {
+    if (strncmp(curr, " > ", 3) == 0) break;
+    curr++;
+  }
+
+  // return if file pipe character not found
+  if (!*curr) {
+    *dest_loc = 0;
+    return 0;
+  }
+
+  // set cmd to end of cmd before file pipe character
+  cmd = curr;
+
+  // move cursor to start of pipe destination
+  curr += 3;
+
+  // ignore whitespace
+  while (*curr++ == ' ')
+    ;
+
+  // get length of pipe destination filename
+  char *start = curr - 1;
+  int len = 0;
+  while (*curr) {
+    if (*curr == ' ') {
+      len = -1;
+      break;
+    }
+    curr++;
+    len++;
+  }
+
+  // return if there is more than a file name
+  if (len == -1) {
+    *dest_loc = 0;
+    return -1;
+  }
+
+  // save filename to memory
+  *dest_loc = (char *)malloc(len + 1);
+  strncpy(*dest_loc, start, len + 1);
+
+  // strip everything after the command
+  *cmd = 0;
+  return 1;
+}
