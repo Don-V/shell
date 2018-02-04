@@ -225,3 +225,29 @@ void list_background_processes(const shell_t* shell) {
     write_format((shell->dest).out, "%40s | %10d\n", job->name, job->pid);
   }
 }
+
+bool set_output_destination(shell_t* shell, char* cmd) {
+  char* out_filename = 0;
+  int dest_change = pipe_destination(cmd, &out_filename);
+
+  if (dest_change == 1) {
+    FILE* outfile = fopen(out_filename, "w+");
+    shell->dest.out = outfile;
+    shell->dest.err = outfile;  // TODO don't send output?
+    return true;
+  }
+
+  shell->dest.out = stdout;
+  shell->dest.err = stderr;
+  if (dest_change == -1) {
+    write_format(shell->dest.err,
+                 "%serror:%s Cannot send output to more than one file\n", KRED,
+                 RESET);
+  }
+  return false;
+}
+
+void close_destination(shell_t* shell) {
+  fclose(shell->dest.out);
+  fclose(shell->dest.err);
+}

@@ -164,4 +164,18 @@ void list_background_processes(const shell_t* shell);
  */
 void write_format(FILE* dest, const char* format, ...);
 
+/**
+ * Sets the destination of the output
+ * \param shell the shell
+ * \param cmd the command being run
+ * \return true if destination was changed from default
+ */
+bool set_output_destination(shell_t* shell, char* cmd);
+
+/**
+ * Closes the output destinations
+ * \param shell the shell
+ */
+void close_destination(shell_t* shell);
+
 #endif
