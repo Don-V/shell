@@ -7,15 +7,22 @@ int main(int argc, char** argv) {
   init_shell(&shell);
   // parse command line arguments
   cmd_args args = parse_args(argc, argv);
+  bool change_destination = false;
 
   // start shell
   while (should_be_open(cmd)) {
+    if (change_destination) close_destination(&shell);
     // get input
     print_prompt(args.prompt);
     get_input(cmd);
 
+    change_destination = set_output_destination(&shell, cmd);
+
     // process input
-    if (handle_builtin(&shell, cmd)) continue;
+    if (handle_builtin(&shell, cmd)) {
+      check_for_dead_processes(&shell);
+      continue;
+    }
     const char** input_args = split(cmd, ' ');
 
     handle_process(&shell, input_args);
