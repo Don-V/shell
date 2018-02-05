@@ -109,13 +109,17 @@ bool handle_builtin(const shell_t* shell, const char* cmd) {
     return process_builtin_out(dest, out_str);
   }
 
-  if (strncmp("jobs", cmd, 5) == 0) {
-    list_background_processes(shell);
-    return true;  // process_builtin_out(dest, out_str);
-  }
-
   if (strncmp("exit", cmd, 5) == 0) return true;
 
+  return false;
+}
+
+bool jobs_builtin(shell_t* shell, const char* cmd) {
+  if (strncmp("jobs", cmd, 5) == 0) {
+    check_for_dead_processes(shell);
+    list_background_processes(shell);
+    return true;
+  }
   return false;
 }
 

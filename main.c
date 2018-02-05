@@ -18,13 +18,16 @@ int main(int argc, char** argv) {
 
     change_destination = set_output_destination(&shell, cmd);
 
-    // process input
+    // handle builtin
     if (handle_builtin(&shell, cmd)) {
       check_for_dead_processes(&shell);
       continue;
     }
+
+    if (jobs_builtin(&shell, cmd)) continue;
     const char** input_args = split(cmd, ' ');
 
+    // handle new process
     handle_process(&shell, input_args);
     check_for_dead_processes(&shell);
   }

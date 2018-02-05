@@ -186,4 +186,12 @@ void close_destination(shell_t* shell);
  */
 void add_background_process(List* l, const char* name, pid_t pid);
 
+/**
+ * Handles buitlin for 'jobs' command
+ * \param shell the shell
+ * \param cmd the command being run
+ * \return true if the jobs command was executed else false
+ */
+bool jobs_builtin(shell_t* shell, const char* cmd);
+
 #endif
