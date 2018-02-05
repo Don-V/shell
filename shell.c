@@ -143,12 +143,7 @@ void handle_process(const shell_t* shell, const char* cmd[]) {
 
   if (bg_process) {
     // add background process to list of background processes
-    process_t* process = (process_t*)malloc(sizeof(process_t));
-    size_t name_len = strlen(cmd[0]) + 1;
-    process->name = (char*)malloc(name_len);
-    strncpy(process->name, cmd[0], name_len);
-    process->pid = ch_pid;
-    enqueue((List*)&(shell->jobs), process);
+    add_background_process((List*)&(shell->jobs), cmd[0], ch_pid);
   } else {
     // output child status
     int status;
@@ -161,12 +156,11 @@ void handle_process(const shell_t* shell, const char* cmd[]) {
 
 void print_status(DEST dest, pid_t pid, const char* const cmd_path,
                   int status) {
+  // TODO: print status to stdout
   if (WIFEXITED(status)) {
-    // TODO: out
     write_format(dest.out, "[%d] %s Exit %d\n", pid, cmd_path,
                  WEXITSTATUS(status));
-  } else if (WIFSIGNALED(status)) {  // or just else
-                                     // TODO: out
+  } else if (WIFSIGNALED(status)) {
     write_format(dest.out, "[%d] %s Killed (%d)\n", pid, cmd_path,
                  WTERMSIG(status));
   }
@@ -232,6 +226,7 @@ bool set_output_destination(shell_t* shell, char* cmd) {
 
   if (dest_change == 1) {
     FILE* outfile = fopen(out_filename, "w+");
+    free(out_filename);
     shell->dest.out = outfile;
     shell->dest.err = outfile;  // TODO don't send output?
     return true;
@@ -250,4 +245,13 @@ bool set_output_destination(shell_t* shell, char* cmd) {
 void close_destination(shell_t* shell) {
   fclose(shell->dest.out);
   fclose(shell->dest.err);
+}
+
+void add_background_process(List* l, const char* name, pid_t pid) {
+  process_t* process = malloc(sizeof(process_t));
+  size_t name_len = strlen(name) + 1;
+  process->name = malloc(name_len);
+  strncpy(process->name, name, name_len);
+  process->pid = pid;
+  enqueue(l, process);
 }

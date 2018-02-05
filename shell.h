@@ -178,4 +178,12 @@ bool set_output_destination(shell_t* shell, char* cmd);
  */
 void close_destination(shell_t* shell);
 
+/**
+ * Adds a process name and id to the list of background processes
+ * \param list of processes
+ * \param name name of process
+ * \param pid process id
+ */
+void add_background_process(List* l, const char* name, pid_t pid);
+
 #endif
