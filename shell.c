@@ -123,11 +123,22 @@ void handle_process(const shell_t* shell, const char* cmd[]) {
   pid_t ch_pid = fork();
 
   // execute job in child process
-  if (!ch_pid && execvp(cmd[0], (char* const*)cmd)) {
-    const char* err = strerror(errno);
-    write_format(shell->dest.err, "Cannot exec %s: %s\n", cmd[0], err);
-    free((void*)cmd);
-    exit(-1);
+  if (!ch_pid) {
+    int dest_out = fileno(shell->dest.out);
+    if (dest_out != fileno(stdout)) {
+      if (dup2(dest_out, fileno(stdout)) == -1) {
+        write_to_out(stderr, "Cannot redirect output");
+        return;
+      }
+      close(dest_out);
+    }
+
+    if (execvp(cmd[0], (char* const*)cmd)) {
+      const char* err = strerror(errno);
+      write_format(shell->dest.err, "Cannot exec %s: %s\n", cmd[0], err);
+      free((void*)cmd);
+      exit(-1);
+    }
   }
 
   // check for failed creation of child
@@ -138,8 +149,8 @@ void handle_process(const shell_t* shell, const char* cmd[]) {
   }
 
   // parent action
-  // write process name and pid
-  write_format(shell->dest.out, "[%d] %s\n", ch_pid, cmd[0]);
+  // write process name and pid to stdout
+  write_format(stdout, "[%d] %s\n", ch_pid, cmd[0]);
 
   if (bg_process) {
     // add background process to list of background processes
@@ -156,7 +167,8 @@ void handle_process(const shell_t* shell, const char* cmd[]) {
 
 void print_status(DEST dest, pid_t pid, const char* const cmd_path,
                   int status) {
-  // TODO: print status to stdout
+  // TODO get rid of dest param
+  dest.out = stdout;
   if (WIFEXITED(status)) {
     write_format(dest.out, "[%d] %s Exit %d\n", pid, cmd_path,
                  WEXITSTATUS(status));
@@ -228,7 +240,7 @@ bool set_output_destination(shell_t* shell, char* cmd) {
     FILE* outfile = fopen(out_filename, "w+");
     free(out_filename);
     shell->dest.out = outfile;
-    shell->dest.err = outfile;  // TODO don't send output?
+    // shell->dest.err = outfile;
     return true;
   }
 
