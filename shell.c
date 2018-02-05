@@ -11,6 +11,8 @@
 #include "builtins.h"
 #include "utils.h"
 
+#define NINTEEN_UNDERSCORES " __________________"
+
 static bool process_equals(const void* data1, const void* data2) {
   const process_t* process = (const process_t*)data1;
   const pid_t* pid = (const pid_t*)data2;
@@ -225,11 +227,13 @@ void list_background_processes(const shell_t* shell) {
     write_format((shell->dest).out, "No running processes\n");
     return;
   }
-  write_format((shell->dest).out, "%40s | %10s\n", "process", "pid");
-  write_format((shell->dest).out, "%40s | %10d\n", job->name, job->pid);
-  while ((job = (const process_t*)iterate((List*)&(shell->jobs), false))) {
-    write_format((shell->dest).out, "%40s | %10d\n", job->name, job->pid);
-  }
+
+  // print out jobs
+  write_format((shell->dest).out, " %-10s| %-7s\n", "process", "pid");
+  do {
+    write_to_out((shell->dest).out, NINTEEN_UNDERSCORES);
+    write_format((shell->dest).out, " %-10s| %-7d\n", job->name, job->pid);
+  } while ((job = (const process_t*)iterate((List*)&(shell->jobs), false)));
 }
 
 bool set_output_destination(shell_t* shell, char* cmd) {
