@@ -111,6 +111,7 @@ int pipe_destination(char cmd[], char **dest_loc) {
 
   // set cmd to end of cmd before file pipe character
   cmd = curr;
+  bool amp = false;
 
   // move cursor to start of pipe destination
   curr += 3;
@@ -119,12 +120,20 @@ int pipe_destination(char cmd[], char **dest_loc) {
   while (*curr++ == ' ')
     ;
 
+  // start at the beginning of the filename
+  char *start = --curr;
+
   // get length of pipe destination filename
-  char *start = curr - 1;
   int len = 0;
   while (*curr) {
-    if (*curr == ' ') {
+    if (*curr == ' ' &&
+        ((*(curr + 1) != '&') || (*(curr + 1) && *(curr + 2) != 0))) {
       len = -1;
+      break;
+    }
+    if (len > 0 && *(curr - 1) == ' ' && *curr == '&' && *(curr + 1) == 0) {
+      amp = true;
+      len--;
       break;
     }
     curr++;
@@ -137,10 +146,16 @@ int pipe_destination(char cmd[], char **dest_loc) {
     return -1;
   }
 
-  // save filename to memory
-  *dest_loc = (char *)malloc(len + 1);
-  strncpy(*dest_loc, start, len + 1);
+  // save filename to location pointer
+  *dest_loc = malloc(len + 1);
+  char *dest = *dest_loc;
+  strncpy(dest, start, len);
+  dest[len] = 0;
 
+  if (amp) {
+    cmd++;
+    *(cmd)++ = '&';
+  }
   // strip everything after the command
   *cmd = 0;
   return 1;
