@@ -145,11 +145,11 @@ void check_for_dead_processes(shell_t* shell);
 
 /**
  * Searches for a background process with the process of of pid
- * \param shell the shell being searched
+ * \param l the list being searched
  * \param pid the process id of the process
  * \return the name of the process if found else 0
  */
-const char* find_process(shell_t* shell, pid_t pid);
+const char* find_process(List* l, pid_t pid);
 
 /**
  * Prints out the current background processes

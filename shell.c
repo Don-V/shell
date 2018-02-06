@@ -139,6 +139,10 @@ void handle_process(const shell_t* shell, const char* cmd[]) {
       close(dest_out);
     }
 
+    // no idea why I need to do this
+    // but it fixes sleep 10 running as sleep 1
+    fflush(shell->dest.out);
+
     if (execvp(cmd[0], (char* const*)cmd)) {
       const char* err = strerror(errno);
       write_format(shell->dest.err, "Cannot exec %s: %s\n", cmd[0], err);
@@ -202,7 +206,7 @@ void check_for_dead_processes(shell_t* shell) {
   int status;
   pid_t pid = waitpid(-1, &status, WNOHANG);
   if (pid > 0) {
-    const char* name = find_process(shell, pid);
+    const char* name = find_process(&(shell->jobs), pid);
     print_status(shell->dest, pid, name, status);
     free((void*)name);
   }
@@ -215,8 +219,8 @@ void write_format(FILE* dest, const char* format, ...) {
   va_end(args);
 }
 
-const char* find_process(shell_t* shell, pid_t pid) {
-  process_t* found = list_remove(&(shell->jobs), &pid);
+const char* find_process(List* l, pid_t pid) {
+  process_t* found = list_remove(l, &pid);
   if (found) {
     const char* name = found->name;
     free(found);
