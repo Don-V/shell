@@ -263,8 +263,8 @@ bool set_output_destination(shell_t* shell, char* cmd) {
 }
 
 void close_destination(shell_t* shell) {
-  fclose(shell->dest.out);
-  fclose(shell->dest.err);
+  if (fileno(shell->dest.out) != fileno(stdout)) fclose(shell->dest.out);
+  if (fileno(shell->dest.err) != fileno(stderr)) fclose(shell->dest.err);
 }
 
 void add_background_process(List* l, const char* name, pid_t pid) {
