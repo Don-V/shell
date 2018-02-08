@@ -2,20 +2,26 @@
 #include "utils.h"
 
 int main(int argc, char** argv) {
-  static char cmd[CMD_LEN] = {0};
+  static char cmd[CMD_LEN];
+
+  // create shell
   shell_t shell;
   init_shell(&shell);
+
   // parse command line arguments
   cmd_args args = parse_args(argc, argv);
   bool change_destination = false;
 
-  // start shell
+  // start shell listener
   while (should_be_open(cmd)) {
+    // close destination if not stdout
     if (change_destination) close_destination(&shell);
+
     // get input
     print_prompt(args.prompt);
     get_input(cmd);
 
+    // change output destination if needed
     change_destination = set_output_destination(&shell, cmd);
 
     // handle builtin

@@ -13,6 +13,9 @@
 
 #define NINTEEN_UNDERSCORES " __________________"
 
+/**
+ * Checks if two processes are equal by comparing their pids
+ */
 static bool process_equals(const void* data1, const void* data2) {
   const process_t* process = (const process_t*)data1;
   const pid_t* pid = (const pid_t*)data2;
@@ -143,6 +146,7 @@ void handle_process(const shell_t* shell, const char* cmd[]) {
     // but it fixes sleep 10 running as sleep 1
     fflush(shell->dest.out);
 
+    // change program text
     if (execvp(cmd[0], (char* const*)cmd)) {
       const char* err = strerror(errno);
       write_format(shell->dest.err, "Cannot exec %s: %s\n", cmd[0], err);
@@ -169,21 +173,21 @@ void handle_process(const shell_t* shell, const char* cmd[]) {
     // output child status
     int status;
     waitpid(ch_pid, &status, 0);
-    print_status(shell->dest, ch_pid, cmd[0], status);
+    print_status(ch_pid, cmd[0], status);
   }
 
   free((void*)cmd);
 }
 
-void print_status(DEST dest, pid_t pid, const char* const cmd_path,
-                  int status) {
-  // TODO get rid of dest param
-  dest.out = stdout;
+void print_status(pid_t pid, const char* const cmd_path, int status) {
+  // print normal exit
   if (WIFEXITED(status)) {
-    write_format(dest.out, "[%d] %s Exit %d\n", pid, cmd_path,
+    write_format(stdout, "[%d] %s Exit %d\n", pid, cmd_path,
                  WEXITSTATUS(status));
+
+    // print signal exit
   } else if (WIFSIGNALED(status)) {
-    write_format(dest.out, "[%d] %s Killed (%d)\n", pid, cmd_path,
+    write_format(stdout, "[%d] %s Killed (%d)\n", pid, cmd_path,
                  WTERMSIG(status));
   }
 }
@@ -207,7 +211,7 @@ void check_for_dead_processes(shell_t* shell) {
   pid_t pid;
   while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
     const char* name = find_process(&(shell->jobs), pid);
-    print_status(shell->dest, pid, name, status);
+    print_status(pid, name, status);
     free((void*)name);
   }
 }
@@ -248,6 +252,7 @@ bool set_output_destination(shell_t* shell, char* cmd) {
   char* out_filename = 0;
   int dest_change = pipe_destination(cmd, &out_filename);
 
+  // change destination to specified file
   if (dest_change == 1) {
     FILE* outfile = fopen(out_filename, "w+");
     free(out_filename);
@@ -259,9 +264,10 @@ bool set_output_destination(shell_t* shell, char* cmd) {
   shell->dest.out = stdout;
   shell->dest.err = stderr;
   if (dest_change == -1) {
-    write_format(shell->dest.err,
-                 "%serror:%s Cannot send output to more than one file\n", KRED,
-                 RESET);
+    write_format(
+        shell->dest.err,
+        "%serror:%s Cannot send output to more than one file or syntx error\n",
+        KRED, RESET);
   }
   return false;
 }
@@ -272,10 +278,13 @@ void close_destination(shell_t* shell) {
 }
 
 void add_background_process(List* l, const char* name, pid_t pid) {
+  // create process structure
   process_t* process = malloc(sizeof(process_t));
   size_t name_len = strlen(name) + 1;
   process->name = malloc(name_len);
   strncpy(process->name, name, name_len);
   process->pid = pid;
+
+  // add process to list
   enqueue(l, process);
 }

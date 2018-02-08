@@ -3,12 +3,18 @@
 
 #include <stdbool.h>
 
+/**
+ * Internal structure to store data
+ */
 typedef struct Node {
   void* data;
   struct Node* next;
 
 } Node;
 
+/**
+ * Structure for list
+ */
 typedef struct List {
   Node* front;
   Node* rear;
@@ -50,8 +56,6 @@ void* list_search(List* l, void* query);
  * \return the data removed or 0 if not found
  */
 void* list_remove(List* l, void* data);
-
-void empty_list(List* l);
 
 /**
  * Iterates through the list and returns the next member

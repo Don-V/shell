@@ -18,28 +18,19 @@ void list_init(List* l, bool (*equals)(const void* data1, const void* data2)) {
 }
 
 void enqueue(List* l, void* data) {
+  // create internal node with data
   struct Node* temp = (struct Node*)malloc(sizeof(struct Node));
   temp->data = data;
   temp->next = NULL;
   l->size++;
+
+  // add node to list
   if (l->front == NULL && l->rear == NULL) {
     l->front = l->rear = temp;
     return;
   }
   l->rear->next = temp;
   l->rear = temp;
-}
-
-/*Removes all elements from the queue*/
-void empty_list(List* l) {
-  struct Node* temp = l->front;
-  while (temp) {
-    l->front = l->front->next;
-    free(temp);
-    temp = l->front;
-  }
-  l->front = l->rear = NULL;
-  l->size = 0;
 }
 
 static query_result_t search(List* l, void* query) {
@@ -96,7 +87,10 @@ void* list_search(List* l, void* query) {
 }
 
 void* iterate(List* l, bool start) {
+  // change start position to start of the list
   if (start) l->_iter = l->front;
+
+  // move iterator to next node
   Node* curr = l->_iter;
   if (curr) {
     l->_iter = curr->next;

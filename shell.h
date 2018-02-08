@@ -129,12 +129,11 @@ void handle_process(const shell_t* shell, const char* cmd[]);
 
 /**
  * Prints the status of a process to a destination
- * \param dest the destination of the output
  * \param pid the process id of the process
  * \param cmd_path the name of the process
  * \param status status of dead process
  */
-void print_status(DEST dest, pid_t pid, const char* const cmd_path, int status);
+void print_status(pid_t pid, const char* const cmd_path, int status);
 
 /**
  * Checks for background processes and

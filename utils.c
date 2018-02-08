@@ -71,7 +71,7 @@ int count(const char *str, char sub) {
 const char **split(char *str, char delim) {
   if (!str) return 0;
   int len = count(str, delim) + 1;
-  const char **res = (const char **)malloc(sizeof(char *) * (len + 1));
+  const char **res = malloc(sizeof(char *) * (len + 1));
   res[0] = strtok(str, &delim);
   int i = 1;
   while ((res[i++] = strtok(0, &delim)))
@@ -83,10 +83,12 @@ const char **split(char *str, char delim) {
 bool remove_ampersand(const char *cmd[]) {
   const char **c = cmd;
 
+  // get last string
   while (*c) {
     cmd = c++;
   }
 
+  // check for ampersand
   if (*cmd && strncmp("&", *cmd, 2) == 0) {
     *cmd = 0;
     return true;
@@ -126,6 +128,7 @@ int pipe_destination(char cmd[], char **dest_loc) {
   // get length of pipe destination filename
   int len = 0;
   while (*curr) {
+    // validate syntax
     if (*curr == ' ' &&
         ((*(curr + 1) != '&') || (*(curr + 1) && *(curr + 2) != 0))) {
       len = -1;
