@@ -140,6 +140,9 @@ void handle_process(const shell_t* shell, const char* cmd[]) {
         return;
       }
       close(dest_out);
+    } else if (bg_process) {
+      // change process group of background child process
+      setpgid(0, 0);
     }
 
     // no idea why I need to do this
