@@ -204,8 +204,8 @@ void write_to_out(FILE* dest, const char* out) {
 
 void check_for_dead_processes(shell_t* shell) {
   int status;
-  pid_t pid = waitpid(-1, &status, WNOHANG);
-  if (pid > 0) {
+  pid_t pid;
+  while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
     const char* name = find_process(&(shell->jobs), pid);
     print_status(shell->dest, pid, name, status);
     free((void*)name);
