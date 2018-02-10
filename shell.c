@@ -134,15 +134,16 @@ void handle_process(const shell_t* shell, const char* cmd[]) {
   // execute job in child process
   if (!ch_pid) {
     int dest_out = fileno(shell->dest.out);
+    if (bg_process) {
+      // change process group of background child process
+      setpgid(0, 0);
+    }
     if (dest_out != fileno(stdout)) {
       if (dup2(dest_out, fileno(stdout)) == -1) {
         write_to_out(stderr, "Cannot redirect output");
         return;
       }
       close(dest_out);
-    } else if (bg_process) {
-      // change process group of background child process
-      setpgid(0, 0);
     }
 
     // no idea why I need to do this
